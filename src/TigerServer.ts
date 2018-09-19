@@ -23,8 +23,10 @@ export default (basePath: string, serverPort?: number, configurer?: (express: ex
 
   fs.readdir(basePath, (err, files) => {
     files.forEach(file => {
-      LOGGER.info(`Preload module: [${file}]`)
-      moduleLoader(file);
+      if (file.match(/.*\.js$/)) {
+        LOGGER.info(`Preload module: [${file}]`)
+        moduleLoader(file);
+      }
     });
   });
   
