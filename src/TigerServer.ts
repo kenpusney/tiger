@@ -24,12 +24,12 @@ export default (basePath: string, serverPort?: number, configurer?: (express: ex
   if (configurer) configurer(server);
 
   fs.readdir(basePath, (err, files) => {
-    files.filter(file => file.match(/.*\.js$/)).forEach(file => {
-      if (file.match(/.*\.js$/)) {
+    files
+      .filter(file => file.match(/.*\.js$/))
+      .forEach(file => {
         LOGGER.info(`Preload module: [${file}]`)
         moduleLoader(file);
-      }
-    });
+      });
   })
 
   return () => {
