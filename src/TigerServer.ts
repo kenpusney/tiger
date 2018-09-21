@@ -24,7 +24,7 @@ export default (basePath: string, serverPort?: number, configurer?: (express: ex
   if (configurer) configurer(server);
 
   fs.readdir(basePath, (err, files) => {
-    files.forEach(file => {
+    files.filter(file => file.match(/.*\.js$/)).forEach(file => {
       if (file.match(/.*\.js$/)) {
         LOGGER.info(`Preload module: [${file}]`)
         moduleLoader(file);
