@@ -4,6 +4,8 @@ const nodeCron = require("node-cron")
 
 const express = require("express")
 
+const cors = require('cors')
+
 const mailer = require("nodemailer")
 
 
@@ -65,6 +67,8 @@ const cron = function(tiger) {
 const http = function(tiger) {
 
   const server = express()
+
+  server.use(cors())
 
   const resolver = {
     define(path, id, processor) {

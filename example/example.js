@@ -1,7 +1,7 @@
 
-const { mail } = require("../src/protocols")
+const { mail } = require("../protocols")
 
-const tiger = require("../src/index")({
+const tiger = require("../index")({
   mail: {
     sender: "email@example.com",
     transport: {
