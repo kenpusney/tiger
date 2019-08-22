@@ -9,8 +9,17 @@ export interface Resolver<Param> {
 
 export abstract class BaseResolver<Param> implements Resolver<Param> {
   abstract readonly protocol: string
-  define(path: string, id: string, handler: Handler<Param>): void {}
-  notify(path: string, param: Param, tiger: Tiger): void {}
+
+  private _logger = getLogger("base-resolver")
+
+  define(path: string, id: string, handler: Handler<Param>): void {
+    this._logger.warn(`entering empty definition resolver for ${path}, ${id}`)
+  }
+  notify(path: string, param: Param, tiger: Tiger): void {
+    const message = `entering empty notify resolver for ${path}, ${param}`;
+    tiger.warn(message);
+    this._logger.warn(message);
+  }
 }
 
 interface TigerConfig {}

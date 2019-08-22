@@ -16,6 +16,7 @@ function processWithMutableState<Param>(tiger: Tiger, processor: Handler<Param>,
 
 class CronPlugin implements TigerPlugin  {
   id: string = "cron";  
+  
   setup(tiger: Tiger): void {
     tiger.register(new class extends BaseResolver<object> {
       readonly protocol: string = "cron";
@@ -30,9 +31,10 @@ class CronPlugin implements TigerPlugin  {
 
 class HttpPlugin implements TigerPlugin {
   id: string = "http";
+  private _server = express();
+  
   setup(tiger: Tiger): void {
-    const server = express()
-
+    const server = this._server;
     server.use(cors())
   
     tiger.register(new class extends BaseResolver<object> {
@@ -52,6 +54,7 @@ class HttpPlugin implements TigerPlugin {
 
 class MailPlugin implements TigerPlugin {
   id: string = "mail";  
+
   setup(tiger: Tiger): void {
     tiger.register(new class extends BaseResolver<object> {
       readonly protocol: string = "mail"
