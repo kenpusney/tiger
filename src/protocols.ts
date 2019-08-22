@@ -38,9 +38,9 @@ const http = function(tiger: Tiger) {
     }
   })
 
-  tiger.serve = function() {
-    server.listen(9527)
-  }
+  process.nextTick(() => {
+    server.listen(9527);
+  })
 }
 
 
