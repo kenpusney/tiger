@@ -24,15 +24,15 @@ export interface Handler<Param> {
 
 type TigerCall = (tiger: Tiger) => void
 
-export interface Plugin {
+export interface TigerPlugin {
   readonly id: string;
-  readonly setup: TigerCall
+  setup(tiger: Tiger): void
 }
 
 export class Tiger {
 
   readonly config: TigerConfig
-  private _plugins: { [key: string]: Plugin }
+  private _plugins: { [key: string]: TigerPlugin }
   private _tigs: { [key: string]: Handler<any> }
   private _resolvers: { [key: string]: Resolver<any> }
   private _state: { [key: string]: object }
@@ -52,12 +52,12 @@ export class Tiger {
     this._postInitializeProcesses = [];
   }
 
-  use(plugin: (tiger: Tiger) => void) {
-    plugin(this);
+  use(plugin: TigerPlugin) {
+    this.usePlugin(plugin)
   }
 
-  usePlugin(plugin: Plugin) {
-    if (this._plugins[plugin.id] !== undefined) {
+  usePlugin(plugin: TigerPlugin) {
+    if (this._plugins[plugin.id] === undefined) {
       this._plugins[plugin.id] = plugin;
       plugin.setup(this)
     } else {
