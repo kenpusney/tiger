@@ -60,8 +60,6 @@ class MailPlugin implements TigerPlugin {
       }
     });
   }
-
-
 }
 
 const cron = new CronPlugin();

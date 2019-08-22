@@ -29,6 +29,18 @@ export interface TigerPlugin {
   setup(tiger: Tiger): void
 }
 
+export interface Target {
+  readonly protocol: string
+  readonly path: string
+}
+
+
+export function makeTargetFromString(target: string): Target {
+  const EXTRACTOR = /(?<protocol>\w+):(?<path>.+)/;
+  const { protocol, path } = EXTRACTOR.exec(target)!["groups"];
+  return { protocol, path };
+}
+
 export class Tiger {
 
   readonly config: TigerConfig
@@ -68,11 +80,9 @@ export class Tiger {
   define<Param>(id: string, handler: Handler<Param>) {
     this._tigs[id] = handler;
 
-    const target = handler.target
     const processor = handler
-    const targetDef = target.split(":");
-    const protocol = targetDef[0]
-    const path = targetDef[1]
+    const target = makeTargetFromString(handler.target);
+    const { path, protocol } = target;
 
     const resolver = this._resolvers[protocol]
 
@@ -86,9 +96,7 @@ export class Tiger {
   notify<Param>(target: string, param: Param) {
     this.log(`Notifying target: ${target} with param ${param}`)
 
-    const targetDef = target.split(":")
-    const protocol = targetDef[0];
-    const path = targetDef[1]
+    const { protocol, path } = makeTargetFromString(target);
     const resolver = this._resolvers[protocol]
 
     if (resolver && resolver.notify) {
