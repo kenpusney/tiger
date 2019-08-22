@@ -1,0 +1,7 @@
+!lib/
+docs/
+*.tgz
+
+.EditorConfig
+tsconfig.json
+example/

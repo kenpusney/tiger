@@ -1,0 +1,9 @@
+{
+  "compileOnSave": true,
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "target": "es5",
+    "outDir": "lib",
+    "watch": true
+  }
+}
