@@ -15,7 +15,8 @@ function processWithMutableState<Param>(tiger: Tiger, processor: Handler<Param>,
 }
 
 const cron = function(tiger: Tiger) {
-  tiger.register("cron", new class extends BaseResolver<object> {
+  tiger.register(new class extends BaseResolver<object> {
+    readonly protocol: string = "cron";
     define(path: string, id: string, processor: Handler<object>) {
       nodeCron.schedule(path, function() {
         processWithMutableState(tiger, processor, id, {});
@@ -30,7 +31,8 @@ const http = function(tiger: Tiger) {
 
   server.use(cors())
 
-  tiger.register("http", new class extends BaseResolver<object> {
+  tiger.register(new class extends BaseResolver<object> {
+    readonly protocol: string = "http";
     define(path: string, id: string, processor: Handler<object>) {
       server.get(path, (req, res) => {
         processWithMutableState(tiger, processor, id, {req, res})
@@ -44,8 +46,9 @@ const http = function(tiger: Tiger) {
 }
 
 
-const mail = function(tiger) {
-  tiger.register("mail", new class extends BaseResolver<object> {
+const mail = function(tiger: Tiger) {
+  tiger.register(new class extends BaseResolver<object> {
+    readonly protocol: string = "mail"
     notify(target: string, param: object, tiger: Tiger) {
       console.log(`sending email to ${target} ${param}`)
     }

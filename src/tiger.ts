@@ -2,33 +2,43 @@
 import { Logger, getLogger } from  "log4js"
 
 export interface Resolver<Param> {
+  readonly protocol: string
   define(path: string, id: string, handler: Handler<Param>): void
   notify(path: string, param: Param, tiger: Tiger): void
 }
 
-export class BaseResolver<Param> implements Resolver<Param> {
+export abstract class BaseResolver<Param> implements Resolver<Param> {
+  abstract readonly protocol: string
   define(path: string, id: string, handler: Handler<Param>): void {}
   notify(path: string, param: Param, tiger: Tiger): void {}
 }
 
 interface TigerConfig {}
 
+type Processor<Param> = (tiger: Tiger, state: object, param: Param) => object
+
 export interface Handler<Param> {
-  target: string,
-  processor(tiger: Tiger, state: object, param: Param): object
+  readonly target: string
+  readonly processor: Processor<Param>
 }
 
-export interface Plugin {}
+type TigerCall = (tiger: Tiger) => void
+
+export interface Plugin {
+  readonly id: string;
+  readonly setup: TigerCall
+}
 
 export class Tiger {
 
+  readonly config: TigerConfig
+  private _plugins: { [key: string]: Plugin }
+  private _tigs: { [key: string]: Handler<any> }
+  private _resolvers: { [key: string]: Resolver<any> }
+  private _state: { [key: string]: object }
+  private _logger: Logger
 
-  config: TigerConfig
-  _plugins: { [key: string]: Plugin }
-  _tigs: { [key: string]: Handler<any> }
-  _resolvers: { [key: string]: Resolver<any> }
-  _state: { [key: string]: object }
-  _logger: Logger
+  private _postInitializeProcesses: Array<TigerCall>
 
   constructor(config = {}) {
     this.config = config;
@@ -39,10 +49,20 @@ export class Tiger {
 
     this._logger = getLogger("tiger");
     this._logger.level = "INFO";
+    this._postInitializeProcesses = [];
   }
 
-  use(plugin: (tiger: Tiger)=>void) {
+  use(plugin: (tiger: Tiger) => void) {
     plugin(this);
+  }
+
+  usePlugin(plugin: Plugin) {
+    if (this._plugins[plugin.id] !== undefined) {
+      this._plugins[plugin.id] = plugin;
+      plugin.setup(this)
+    } else {
+      this.warn(`Existed plugin: ${plugin.id}`)
+    }
   }
 
   define<Param>(id: string, handler: Handler<Param>) {
@@ -78,8 +98,8 @@ export class Tiger {
     }
   }
 
-  register<Param>(protocol, resolver: Resolver<Param>): void {
-    this._resolvers[protocol] = resolver;
+  register<Param>(resolver: Resolver<Param>): void {
+    this._resolvers[resolver.protocol] = resolver;
   }
 
   state(key: string, value?: object): object {
@@ -90,18 +110,19 @@ export class Tiger {
     }
   }
 
-
   serve() {
-
+    this._postInitializeProcesses.forEach(it => {
+      it(this);
+    })
   }
 
-  log(log, scope = "") {
+  log(log: string, scope?: string) {
     this._logger.info(`${scope ? scope + " -- " : ""}${log}`);
   }
-  error(log, scope = "") {
+  error(log: string, scope?: string) {
     this._logger.error(`${scope ? scope + " -- " : ""}${log}`);
   }
-  warn(log, scope = "") {
+  warn(log: string, scope?: string) {
     this._logger.warn(`${scope ? scope + " -- " : ""}${log}`);
   }
 }
