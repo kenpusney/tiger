@@ -6,3 +6,4 @@ types/
 .nyc_output/
 coverage/
 .data/
+yarn.lock
