@@ -4,6 +4,7 @@
   "compilerOptions": {
     "target": "es5",
     "outDir": "lib",
-    "watch": true
+    "watch": true,
+    "experimentalDecorators": true
   }
 }

@@ -43,8 +43,7 @@ export interface Target {
   readonly path: string
 }
 
-
-export function makeTargetFromString(target: string): Target {
+function makeTargetFromString(target: string): Target {
   const EXTRACTOR = /(?<protocol>\w+):(?<path>.+)/;
   const { protocol, path } = EXTRACTOR.exec(target)!["groups"];
   return { protocol, path };
@@ -77,6 +76,9 @@ export class Tiger {
     this.usePlugin(plugin)
   }
 
+  /** 
+   * @deprecated Use `use(...)` instead.
+   */
   usePlugin(plugin: TigerPlugin) {
     if (this._plugins[plugin.id] === undefined) {
       this._plugins[plugin.id] = plugin;
