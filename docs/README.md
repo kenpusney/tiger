@@ -1,6 +1,7 @@
 # Tiger
 
-<center><img src="./1024px-Ghostscript_Tiger.png" width="250" height="250"/></center>
+<img src="./1024px-Ghostscript_Tiger.png" width="250" height="250"/>
+
 Tiger is a simple framework of lightweight process.
 
 ## Use cases
