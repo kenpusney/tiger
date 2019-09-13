@@ -1,6 +1,6 @@
 # tiger-server
 
-<center><img src="./docs/1024px-Ghostscript_Tiger.png" width=250 height=250/></center>
+<center><img src="./1024px-Ghostscript_Tiger.png" width="250" height="250"/></center>
 
 Tiger server is a very lightweight server for very simple process like webhooks.
 
