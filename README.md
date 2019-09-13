@@ -1,5 +1,7 @@
 # tiger-server
 
+<center><img src="./docs/1024px-Ghostscript_Tiger.png" width=250 height=250/></center>
+
 Tiger server is a very lightweight server for very simple process like webhooks.
 
 ## Usage
@@ -35,3 +37,6 @@ tiger.serve();
 ```
 
 Just run `node server.js` then you can now see these modules interactions.
+
+
+> Logo is generated from [Wikipedia](https://en.wikipedia.org/wiki/File:Ghostscript_Tiger.svg), the original script is under GPL license.
