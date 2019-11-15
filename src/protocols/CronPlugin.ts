@@ -12,7 +12,7 @@ export class CronPlugin implements TigerPlugin  {
   setup(tiger: Tiger): void {
     tiger.register(new class extends BaseResolver<object, object> {
       readonly protocol: string = "cron";
-      define(path: string, id: string, handler: ExtendedHandler<object, object>) {
+      define(path: string, handler: ExtendedHandler<object, object>) {
         nodeCron.schedule(path, function() {
           processWithMutableState(handler, {});
         })

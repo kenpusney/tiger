@@ -4,7 +4,7 @@ const nanoid = require("nanoid")
 
 export interface Resolver<Param, State> {
   readonly protocol: string
-  define(path: string, id: string, handler: ExtendedHandler<Param, State>): void
+  define(path: string, handler: ExtendedHandler<Param, State>): void
   notify(path: string, param: Param, tiger: Tiger): void
 }
 
@@ -13,12 +13,11 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
 
   private _logger = getLogger("base-resolver")
 
-  define(path: string, id: string, handler: ExtendedHandler<Param, State>): void {
-    this._logger.warn(`entering empty definition resolver for ${path}, ${id}`)
+  define(path: string, handler: ExtendedHandler<Param, State>): void {
+    this._logger.warn(`entering empty definition resolver for ${path}, ${handler.id}`)
   }
   notify(path: string, param: Param, tiger: Tiger): void {
     const message = `entering empty notify resolver for ${path}, ${param}`;
-    tiger.warn(message);
     this._logger.warn(message);
   }
 }
@@ -116,14 +115,13 @@ export class Tiger {
 
   define<Param = object, State = object>(handler: Handler<Param, State>) {
 
-    const id: string = handler.id || nanoid();
-    handler.id = id;
+    handler.id = handler.id || nanoid();;
 
     const tiger = this;
     
     const extended = Object.assign(handler, tigerHandlerAdapter(handler, tiger))
 
-    this._tigs[id] = extended;
+    this._tigs[handler.id] = extended;
 
     const target = makeTargetFromString(extended.target);
     const { path, protocol } = target;
@@ -131,7 +129,7 @@ export class Tiger {
     const resolver = this._resolvers[protocol]
 
     if (resolver && resolver.define) {
-      resolver.define(path, id, extended);
+      resolver.define(path, extended);
     } else {
       this.warn(`No valid definition handler found for protocol [${protocol}]`)
     }
