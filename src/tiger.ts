@@ -25,7 +25,7 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
 interface TigerConfig {}
 
 type Processor<Param, State> = (this: ExtendedHandler<Param, State>, state: State, param: Param) => object | void
-export interface Handler<Param, State> {
+interface Handler<Param, State> {
   id?: string
   readonly target: string
   readonly process: Processor<Param, State>

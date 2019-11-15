@@ -1,4 +1,4 @@
-import { TigerPlugin, BaseResolver, Tiger, Handler, ExtendedHandler } from "../tiger";
+import { TigerPlugin, BaseResolver, Tiger, ExtendedHandler } from "../tiger";
 import { processWithMutableState } from "./common"
 
 import express = require("express");

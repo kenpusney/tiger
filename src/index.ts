@@ -1,5 +1,5 @@
 
-import { Tiger, Handler } from "./tiger"
+import { Tiger } from "./tiger"
 
 import { http, cron, mail } from "./protocols"
 
