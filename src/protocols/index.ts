@@ -3,7 +3,7 @@ import { CronPlugin } from "./CronPlugin"
 import { HttpPlugin } from "./HttpPlugin"
 import { MailPlugin } from "./MailPlugin"
 import { ExamplePlugin } from "./ExamplePlugin";
-import { ZmqPlugin } from "./ZqmPlugin";
+import { ZmqPlugin } from "./ZmqPlugin";
 
 const cron = new CronPlugin();
 const http = new HttpPlugin();
