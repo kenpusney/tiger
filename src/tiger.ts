@@ -49,10 +49,6 @@ function makeTargetFromString(target: string): Target {
   return { protocol, path };
 }
 
-function tigerHandlerAdapter<Param, State>(handler: Handler<Param, State>, tiger: Tiger): Extension {
-  return tiger.handlerAdapter(handler);
-}
-
 export type ExtendedHandler<Param, State> = Handler<Param, State> & Extension
 
 export class Tiger {
@@ -83,7 +79,7 @@ export class Tiger {
       this._plugins[plugin.id] = plugin;
       plugin.setup(this)
     } else {
-      this.warn(`Existed plugin: ${plugin.id}`)
+      this._warn(`Existed plugin: ${plugin.id}`)
     }
     return this;
   }
@@ -91,10 +87,8 @@ export class Tiger {
   define<Param = object, State = object>(handler: Handler<Param, State>) {
 
     handler.id = handler.id || nanoid();;
-
-    const tiger = this;
     
-    const extended = Object.assign(handler, tigerHandlerAdapter(handler, tiger))
+    const extended = Object.assign(handler, this._handlerAdapter(handler))
 
     this._tigs[handler.id] = extended;
 
@@ -106,12 +100,12 @@ export class Tiger {
     if (resolver && resolver.define) {
       resolver.define(path, extended);
     } else {
-      this.warn(`No valid definition handler found for protocol [${protocol}]`)
+      this._warn(`No valid definition handler found for protocol [${protocol}]`)
     }
   }
 
-  private notify<Param>(from: string, target: string, param: Param) {
-    this.log(`Notifying target: ${target} with param ${param}`, `tiger:${from}`)
+  private _notify<Param>(from: string, target: string, param: Param) {
+    this._log(`Notifying target: ${target} with param ${param}`, `tiger:${from}`)
 
     const { protocol, path } = makeTargetFromString(target);
     const resolver = this._resolvers[protocol]
@@ -119,7 +113,7 @@ export class Tiger {
     if (resolver && resolver.notify) {
       resolver.notify(path, param, this)
     } else {
-      this.warn(`No valid notification handler found for protocol [${protocol}]`)
+      this._warn(`No valid notification handler found for protocol [${protocol}]`)
     }
   }
 
@@ -128,7 +122,7 @@ export class Tiger {
     this._resolvers[resolver.protocol] = resolver;
   }
 
-  private state(key: string, value?: object): object {
+  private _s(key: string, value?: object): object {
     if (value) {
       this._state[key] = { ...this._state[key], ...value }
     } else {
@@ -142,37 +136,37 @@ export class Tiger {
     })
   }
 
-  private log(log: string, scope?: string) {
+  private _log(log: string, scope?: string) {
     this._logger.info(`${scope ? scope + " -- " : ""}${log}`);
   }
-  private error(log: string, scope?: string) {
+  private _error(log: string, scope?: string) {
     this._logger.error(`${scope ? scope + " -- " : ""}${log}`);
   }
-  private warn(log: string, scope?: string) {
+  private _warn(log: string, scope?: string) {
     this._logger.warn(`${scope ? scope + " -- " : ""}${log}`);
   }
 
-  handlerAdapter<Param, State>(handler: Handler<Param, State>) {
+  _handlerAdapter<Param, State>(handler: Handler<Param, State>) {
     const tiger = this;
     return {
       notify(target: string, param: Param) {
-        tiger.notify(handler.id, target, param);
+        tiger._notify(handler.id, target, param);
       },
       
       log(message: string) {
-        tiger.log(message, handler.id);
+        tiger._log(message, handler.id);
       },
 
       error(message: string) {
-        tiger.error(message, handler.id);
+        tiger._error(message, handler.id);
       },
   
       state(data?: Partial<State>): State {
         const { id } = handler 
         if (data) {
-          return tiger.state(id, { ...tiger.state(id), ...(data as object) }) as any as State
+          return tiger._s(id, { ...tiger._s(id), ...(data as object) }) as any as State
         }
-        return tiger.state(id) as any as State
+        return tiger._s(id) as any as State
       },
     }
   }
@@ -180,4 +174,4 @@ export class Tiger {
 }
 
 
-export type Extension = ReturnType<typeof Tiger.prototype.handlerAdapter>;
+export type Extension = ReturnType<typeof Tiger.prototype._handlerAdapter>;
