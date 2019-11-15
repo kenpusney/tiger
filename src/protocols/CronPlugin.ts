@@ -1,6 +1,7 @@
 
 import { processWithMutableState } from "./common"
-import { TigerPlugin, BaseResolver, Tiger, ExtendedModule } from "../tiger";
+import { TigerPlugin, Tiger, ExtendedModule } from "../tiger";
+import { BaseResolver } from "../resolver"
 
 import nodeCron = require("node-cron");
 export class CronPlugin implements TigerPlugin  {

@@ -1,5 +1,7 @@
-import { TigerPlugin, BaseResolver, Tiger, ExtendedModule } from "../tiger";
+import { TigerPlugin, Tiger, ExtendedModule } from "../tiger";
 import { processWithMutableState } from "./common"
+
+import { BaseResolver } from "../resolver"
 
 import express = require("express");
 import cors = require("cors");

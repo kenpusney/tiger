@@ -28,10 +28,14 @@ Literally, `cron` is a plugin that allows module runs based on a cron expression
 **define**
 
 ```js
-["cron:*/5 * * * * *", function (tiger, { count = 0 }) {
-  count++;
-  return { count }
-}]
+{
+  target: "cron:*/5 * * * * *", 
+
+  process: function ({ count = 0 }) {
+    count++;
+    return { count }
+  }
+}
 ```
 
 ### `http`
@@ -53,10 +57,13 @@ Literally, `cron` is a plugin that allows module runs based on a cron expression
 **define**
 
 ```js
-["http:hello", function (tiger, state, {req, res}) {
-  res.send("hello world");
-  return state;
-}]
+{
+  target: "http:hello", 
+  process: function (state, {req, res}) {
+    res.send("hello world");
+    return state;
+  }
+}
 ```
 
 
@@ -80,16 +87,18 @@ You can either create a module follows a queue, or send messages to the queue in
 **define**
 
 ```js
-["zmq:hello", function (tiger, state, message) {
-  tiger.log(`Message received: ${JSON.stringify(message)}`)
-}]
+{
+  target: "zmq:hello", 
+  state: function (state, message) {
+    tiger.log(`Message received: ${JSON.stringify(message)}`)
+  }
+}
 ```
 
 **notify**
 
 ```js
-
-tiger.notify("zmq:hello", { message: "hello, world" })
+this.notify("zmq:hello", { message: "hello, world" })
 ```
 
 ### `mail`
@@ -129,7 +138,7 @@ Here is required configurations:
 
 ```js
 // `from` and `to` can be omitted since it can be inferred from sender and target.
-tiger.notify("mail:someone@another.com", { 
+this.notify("mail:someone@another.com", { 
   subject: "hello", 
   text: "hello world", 
   html: "<p>hello world</p>" 
@@ -143,17 +152,23 @@ tiger.notify("mail:someone@another.com", {
 A plugin is just a function which takes tiger instance as argument and do some dirty work, including but not limited to register a new resolver.
 
 ```js
-const somePlugin = function(tiger) {
-  const resolver = {
-    define(...) {
-      // do definition work
+const somePlugin = {
+  id: "<plugin id>"
+  setup: function(tiger) {
+    const resolver = {
+      protocol: "<protocol>",
+      define(path, module) {
+        // do definition work
+      },
+
+      notified(path, param, next) {
+        // do notification work
+      }
     },
 
-    notify(...) {
-      // do notification work
-    }
-  },
-
-  tiger.register("the-protocol", resolver)
+    tiger.register(resolver)
+  }
 }
 ```
+
+You can also use
