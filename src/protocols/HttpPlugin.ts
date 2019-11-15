@@ -1,4 +1,4 @@
-import { TigerPlugin, BaseResolver, Tiger, ExtendedHandler } from "../tiger";
+import { TigerPlugin, BaseResolver, Tiger, ExtendedModule } from "../tiger";
 import { processWithMutableState } from "./common"
 
 import express = require("express");
@@ -14,9 +14,9 @@ export class HttpPlugin implements TigerPlugin {
   
     tiger.register(new class extends BaseResolver<object, object> {
       readonly protocol: string = "http";
-      define(path: string, handler: ExtendedHandler<object, object>) {
+      define(path: string, _module: ExtendedModule<object, object>) {
         server.get(path, (req, res) => {
-          processWithMutableState(handler, {req, res})
+          processWithMutableState(_module, {req, res})
         })
       }
     })

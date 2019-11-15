@@ -4,7 +4,7 @@ const nanoid = require("nanoid")
 
 export interface Resolver<Param, State> {
   readonly protocol: string
-  define(path: string, handler: ExtendedHandler<Param, State>): void
+  define(path: string, _module: ExtendedModule<Param, State>): void
   notify(path: string, param: Param): void
 }
 
@@ -13,8 +13,8 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
 
   private _logger = getLogger("base-resolver")
 
-  define(path: string, handler: ExtendedHandler<Param, State>): void {
-    this._logger.warn(`entering empty definition resolver for ${path}, ${handler.id}`)
+  define(path: string, _module: ExtendedModule<Param, State>): void {
+    this._logger.warn(`entering empty definition resolver for ${path}, ${_module.id}`)
   }
   notify(path: string, param: Param): void {
     const message = `entering empty notify resolver for ${path}, ${param}`;
@@ -24,11 +24,11 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
 
 interface TigerConfig {}
 
-type Processor<Param, State> = (this: ExtendedHandler<Param, State>, state: State, param: Param) => object | void
-interface Module<Param, State> {
+type Processor<Param, State, Module> = (this: Module, state: State, param: Param) => object | void
+export interface Module<Param, State> {
   id?: string
   readonly target: string
-  readonly process: Processor<Param, State>
+  readonly process: Processor<Param, State, this>
 }
 
 type TigerCall = (tiger: Tiger) => void
@@ -49,7 +49,7 @@ function makeTargetFromString(target: string): Target {
   return { protocol, path };
 }
 
-export type ExtendedHandler<Param, State> = Module<Param, State> & Extension
+export type ExtendedModule<Param, State> = Module<Param, State> & Extension
 
 export class Tiger {
 
