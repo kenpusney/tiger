@@ -6,7 +6,7 @@ export class MailPlugin implements TigerPlugin {
   setup(tiger: Tiger): void {
     tiger.register(new class extends BaseResolver<object, object> {
       readonly protocol: string = "mail"
-      notify(target: string, param: object, tiger: Tiger) {
+      notify(target: string, param: object) {
         console.log(`sending email to ${target} ${param}`)
       }
     });

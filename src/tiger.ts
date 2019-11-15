@@ -5,7 +5,7 @@ const nanoid = require("nanoid")
 export interface Resolver<Param, State> {
   readonly protocol: string
   define(path: string, handler: ExtendedHandler<Param, State>): void
-  notify(path: string, param: Param, tiger: Tiger): void
+  notify(path: string, param: Param): void
 }
 
 export abstract class BaseResolver<Param, State> implements Resolver<Param, State> {
@@ -16,7 +16,7 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
   define(path: string, handler: ExtendedHandler<Param, State>): void {
     this._logger.warn(`entering empty definition resolver for ${path}, ${handler.id}`)
   }
-  notify(path: string, param: Param, tiger: Tiger): void {
+  notify(path: string, param: Param): void {
     const message = `entering empty notify resolver for ${path}, ${param}`;
     this._logger.warn(message);
   }
@@ -25,7 +25,7 @@ export abstract class BaseResolver<Param, State> implements Resolver<Param, Stat
 interface TigerConfig {}
 
 type Processor<Param, State> = (this: ExtendedHandler<Param, State>, state: State, param: Param) => object | void
-interface Handler<Param, State> {
+interface Module<Param, State> {
   id?: string
   readonly target: string
   readonly process: Processor<Param, State>
@@ -49,13 +49,13 @@ function makeTargetFromString(target: string): Target {
   return { protocol, path };
 }
 
-export type ExtendedHandler<Param, State> = Handler<Param, State> & Extension
+export type ExtendedHandler<Param, State> = Module<Param, State> & Extension
 
 export class Tiger {
 
   readonly config: TigerConfig
   private _plugins: { [key: string]: TigerPlugin }
-  private _tigs: { [key: string]: Handler<any, any> }
+  private _modules: { [key: string]: Module<any, any> }
   private _resolvers: { [key: string]: Resolver<any, any> }
   private _state: { [key: string]: object }
   private _logger: Logger
@@ -65,7 +65,7 @@ export class Tiger {
   constructor(config = {}) {
     this.config = config;
     this._plugins = {};
-    this._tigs = {};
+    this._modules = {};
     this._resolvers = {};
     this._state = {};
 
@@ -84,13 +84,13 @@ export class Tiger {
     return this;
   }
 
-  define<Param = object, State = object>(handler: Handler<Param, State>) {
+  define<Param = object, State = object>(_module: Module<Param, State>) {
 
-    handler.id = handler.id || nanoid();;
+    _module.id = _module.id || nanoid();;
     
-    const extended = Object.assign(handler, this._handlerAdapter(handler))
+    const extended = Object.assign(_module, this._handlerAdapter(_module))
 
-    this._tigs[handler.id] = extended;
+    this._modules[_module.id] = extended;
 
     const target = makeTargetFromString(extended.target);
     const { path, protocol } = target;
@@ -111,7 +111,7 @@ export class Tiger {
     const resolver = this._resolvers[protocol]
 
     if (resolver && resolver.notify) {
-      resolver.notify(path, param, this)
+      resolver.notify(path, param)
     } else {
       this._warn(`No valid notification handler found for protocol [${protocol}]`)
     }
@@ -122,7 +122,7 @@ export class Tiger {
     this._resolvers[resolver.protocol] = resolver;
   }
 
-  private _s(key: string, value?: object): object {
+  private _stat(key: string, value?: object): object {
     if (value) {
       this._state[key] = { ...this._state[key], ...value }
     } else {
@@ -146,7 +146,7 @@ export class Tiger {
     this._logger.warn(`${scope ? scope + " -- " : ""}${log}`);
   }
 
-  _handlerAdapter<Param, State>(handler: Handler<Param, State>) {
+  _handlerAdapter<Param, State>(handler: Module<Param, State>) {
     const tiger = this;
     return {
       notify(target: string, param: Param) {
@@ -164,9 +164,9 @@ export class Tiger {
       state(data?: Partial<State>): State {
         const { id } = handler 
         if (data) {
-          return tiger._s(id, { ...tiger._s(id), ...(data as object) }) as any as State
+          return tiger._stat(id, { ...tiger._stat(id), ...(data as object) }) as any as State
         }
-        return tiger._s(id) as any as State
+        return tiger._stat(id) as any as State
       },
     }
   }
