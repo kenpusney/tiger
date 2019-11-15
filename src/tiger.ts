@@ -49,28 +49,9 @@ function makeTargetFromString(target: string): Target {
   return { protocol, path };
 }
 
-function tigerHandlerAdapter<Param, State>(handler: Handler<Param, State>, tiger: Tiger) {
-  return {
-    notify(target: string, param: Param) {
-      tiger.notify(handler.id, target, param);
-    },
-    
-    log(message: string) {
-
-      tiger.log(message, handler.id);
-    },
-
-    state(data?: Partial<State>): State {
-      const { id } = handler 
-      if (data) {
-        return tiger.state(id, { ...tiger.state(id), ...(data as object) }) as any as State
-      }
-      return tiger.state(id) as any as State
-    },
-  }
+function tigerHandlerAdapter<Param, State>(handler: Handler<Param, State>, tiger: Tiger): Extension {
+  return tiger.handlerAdapter(handler);
 }
-
-export type Extension = ReturnType<typeof tigerHandlerAdapter>;
 
 export type ExtendedHandler<Param, State> = Handler<Param, State> & Extension
 
@@ -97,20 +78,14 @@ export class Tiger {
     this._postInitializeProcesses = [];
   }
 
-  use(plugin: TigerPlugin) {
-    this.usePlugin(plugin)
-  }
-
-  /** 
-   * @deprecated Use `use(...)` instead.
-   */
-  usePlugin(plugin: TigerPlugin) {
+  use(plugin: TigerPlugin): Tiger {
     if (this._plugins[plugin.id] === undefined) {
       this._plugins[plugin.id] = plugin;
       plugin.setup(this)
     } else {
       this.warn(`Existed plugin: ${plugin.id}`)
     }
+    return this;
   }
 
   define<Param = object, State = object>(handler: Handler<Param, State>) {
@@ -135,7 +110,7 @@ export class Tiger {
     }
   }
 
-  notify<Param>(from: string, target: string, param: Param) {
+  private notify<Param>(from: string, target: string, param: Param) {
     this.log(`Notifying target: ${target} with param ${param}`, `tiger:${from}`)
 
     const { protocol, path } = makeTargetFromString(target);
@@ -148,11 +123,12 @@ export class Tiger {
     }
   }
 
+
   register<Param, State>(resolver: Resolver<Param, State>): void {
     this._resolvers[resolver.protocol] = resolver;
   }
 
-  state(key: string, value?: object): object {
+  private state(key: string, value?: object): object {
     if (value) {
       this._state[key] = { ...this._state[key], ...value }
     } else {
@@ -166,13 +142,42 @@ export class Tiger {
     })
   }
 
-  log(log: string, scope?: string) {
+  private log(log: string, scope?: string) {
     this._logger.info(`${scope ? scope + " -- " : ""}${log}`);
   }
-  error(log: string, scope?: string) {
+  private error(log: string, scope?: string) {
     this._logger.error(`${scope ? scope + " -- " : ""}${log}`);
   }
-  warn(log: string, scope?: string) {
+  private warn(log: string, scope?: string) {
     this._logger.warn(`${scope ? scope + " -- " : ""}${log}`);
   }
+
+  handlerAdapter<Param, State>(handler: Handler<Param, State>) {
+    const tiger = this;
+    return {
+      notify(target: string, param: Param) {
+        tiger.notify(handler.id, target, param);
+      },
+      
+      log(message: string) {
+        tiger.log(message, handler.id);
+      },
+
+      error(message: string) {
+        tiger.error(message, handler.id);
+      },
+  
+      state(data?: Partial<State>): State {
+        const { id } = handler 
+        if (data) {
+          return tiger.state(id, { ...tiger.state(id), ...(data as object) }) as any as State
+        }
+        return tiger.state(id) as any as State
+      },
+    }
+  }
+
 }
+
+
+export type Extension = ReturnType<typeof Tiger.prototype.handlerAdapter>;
