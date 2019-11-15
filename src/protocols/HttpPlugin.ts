@@ -14,9 +14,9 @@ export class HttpPlugin implements TigerPlugin {
   
     tiger.register(new class extends BaseResolver<object> {
       readonly protocol: string = "http";
-      define(path: string, id: string, processor: Handler<object>) {
+      define(path: string, id: string, handler: Handler<object>) {
         server.get(path, (req, res) => {
-          processWithMutableState(tiger, processor, id, {req, res})
+          processWithMutableState(tiger, handler, id, {req, res})
         })
       }
     })

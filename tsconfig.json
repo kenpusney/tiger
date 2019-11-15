@@ -3,6 +3,7 @@
   "include": ["src/**/*.ts"],
   "compilerOptions": {
     "target": "es5",
+    "lib": ["es2015"],
     "outDir": "lib",
     "watch": true,
     "experimentalDecorators": true

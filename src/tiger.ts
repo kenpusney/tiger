@@ -1,5 +1,6 @@
 
 import { Logger, getLogger } from  "log4js"
+const nanoid = require("nanoid")
 
 export interface Resolver<Param> {
   readonly protocol: string
@@ -27,8 +28,9 @@ interface TigerConfig {}
 type Processor<Param> = (tiger: Tiger, state: object, param: Param) => object
 
 export interface Handler<Param> {
+  id?: string
   readonly target: string
-  readonly processor: Processor<Param>
+  readonly process: Processor<Param>
 }
 
 type TigerCall = (tiger: Tiger) => void
@@ -88,7 +90,19 @@ export class Tiger {
     }
   }
 
-  define<Param>(id: string, handler: Handler<Param>) {
+  define<Param>(handler: Handler<Param>) {
+
+    const id: string = handler.id || nanoid();
+    handler.id = id;
+
+    const tiger = this;
+    
+    Object.assign(handler, {
+      notify(target: string, param: Param) {
+        tiger.notify(this.id, target, param);
+      }
+    })
+
     this._tigs[id] = handler;
 
     const processor = handler
@@ -104,8 +118,8 @@ export class Tiger {
     }
   }
 
-  notify<Param>(target: string, param: Param) {
-    this.log(`Notifying target: ${target} with param ${param}`)
+  notify<Param>(from: string, target: string, param: Param) {
+    this.log(`Notifying target: ${target} from ${from} with param ${param}`)
 
     const { protocol, path } = makeTargetFromString(target);
     const resolver = this._resolvers[protocol]

@@ -8,17 +8,14 @@ tiger.use(cron)
 
 tiger.use(mail)
 
-tiger.define("cron", { target: "cron:*/5 * * * * *", processor: function (tiger, { count = 0 }) {
+tiger.define({ target: "cron:*/5 * * * * *", process(tiger, { count = 0 }) {
   count++;
-  console.log("hello");
-  tiger.notify("mail:someone@another.com", { subject: "hello", text: "hello world", html: "<p>hello world</p>" });
+  this.notify("mail:someone@another.com", { subject: "hello", text: "hello world", html: "<p>hello world</p>" });
   return { count }
 }});
 
-tiger.define("request", { target: "http:/hello", processor: function (tiger, state, { req, res }) {
-
-  tiger.notify("mail:someone@another.com", { subject: "hello", text: "hello world", html: "<p>hello world</p>" });
-
+tiger.define({ id: "request", target: "http:/hello", process: function (tiger, state, { req, res }) {
+  this.notify("mail:someone@another.com", { subject: "hello", text: "hello world", html: "<p>hello world</p>" });
   res.send("success!")
 }})
 
