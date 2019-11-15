@@ -22,14 +22,14 @@ tiger.define({
 tiger.define({
   target: "cron:*/5 * * * * *",
   process({ count = 0 }) {
-    // count++;
-    // this.notify("mail:someone@another.com", {
-    //   subject: "hello",
-    //   text: "hello world",
-    //   html: "<p>hello world</p>"
-    // });
-    // return { count }
-    this.notify("example:hello", { max: 10 });
+    count++;
+    this.notify("mail:someone@another.com", {
+      subject: "hello",
+      text: "hello world",
+      html: "<p>hello world</p>"
+    });
+    this.notify("example:hello", { max: count });
+    return { count }
   }
 });
 
