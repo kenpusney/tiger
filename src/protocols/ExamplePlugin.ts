@@ -1,7 +1,6 @@
 
 import { TigerPlugin, Tiger, ExtendedModule } from "../tiger";
 import { BaseResolver } from "../resolver"
-import { runInContext } from "vm";
 
 export class ExamplePlugin implements TigerPlugin  {
   /**
