@@ -12,19 +12,9 @@ const example = new ExamplePlugin();
 const zmq = new ZmqPlugin();
 
 export {
-  /**
-   * cron plugin
-   */
   cron, 
-  /**
-   * http plugin
-   */
   http, 
-  /**
-   * mail plugin
-   */
-  mail,
-  
+  mail,  
   example,
   zmq
 }
