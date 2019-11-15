@@ -12,7 +12,8 @@
     "log4js": "^3.0.5",
     "nanoid": "^2.1.6",
     "node-cron": "^1.2.0",
-    "nodemailer": "^5.1.1"
+    "nodemailer": "^5.1.1",
+    "zeromq": "^6.0.0-beta.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.6",

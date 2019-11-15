@@ -1,12 +1,13 @@
 
-const { Tiger, http, cron, mail, basic } = require("../lib")
+const { Tiger, http, cron, mail, example, zmq } = require("../lib")
 
 const tiger = new Tiger({});
 
 tiger.use(http)
 tiger.use(cron)
-tiger.use(basic)
+tiger.use(example)
 tiger.use(mail)
+tiger.use(zmq)
 
 tiger.define({
   target: "example:hello",
@@ -28,6 +29,7 @@ tiger.define({
       text: "hello world",
       html: "<p>hello world</p>"
     });
+    this.notify("zmq:hello", {message: "hello world"});
     this.notify("example:hello", { max: count });
     return { count }
   }
@@ -45,5 +47,12 @@ tiger.define({
     res.send("success!")
   }
 });
+
+tiger.define({
+  target: "zmq:hello",
+  process(state, message) {
+    console.log(JSON.stringify(message))
+  }
+})
 
 tiger.serve();
