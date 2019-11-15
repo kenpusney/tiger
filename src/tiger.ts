@@ -2,18 +2,18 @@
 import { Logger, getLogger } from  "log4js"
 const nanoid = require("nanoid")
 
-export interface Resolver<Param> {
+export interface Resolver<Param, State> {
   readonly protocol: string
-  define(path: string, id: string, handler: Handler<Param>): void
+  define(path: string, id: string, handler: ExtendedHandler<Param, State>): void
   notify(path: string, param: Param, tiger: Tiger): void
 }
 
-export abstract class BaseResolver<Param> implements Resolver<Param> {
+export abstract class BaseResolver<Param, State> implements Resolver<Param, State> {
   abstract readonly protocol: string
 
   private _logger = getLogger("base-resolver")
 
-  define(path: string, id: string, handler: Handler<Param>): void {
+  define(path: string, id: string, handler: ExtendedHandler<Param, State>): void {
     this._logger.warn(`entering empty definition resolver for ${path}, ${id}`)
   }
   notify(path: string, param: Param, tiger: Tiger): void {
@@ -25,12 +25,11 @@ export abstract class BaseResolver<Param> implements Resolver<Param> {
 
 interface TigerConfig {}
 
-type Processor<Param> = (tiger: Tiger, state: object, param: Param) => object
-
-export interface Handler<Param> {
+type Processor<Param, State> = (this: ExtendedHandler<Param, State>, state: State, param: Param) => object | void
+export interface Handler<Param, State> {
   id?: string
   readonly target: string
-  readonly process: Processor<Param>
+  readonly process: Processor<Param, State>
 }
 
 type TigerCall = (tiger: Tiger) => void
@@ -51,12 +50,37 @@ function makeTargetFromString(target: string): Target {
   return { protocol, path };
 }
 
+function tigerHandlerAdapter<Param, State>(handler: Handler<Param, State>, tiger: Tiger) {
+  return {
+    notify(target: string, param: Param) {
+      tiger.notify(handler.id, target, param);
+    },
+    
+    log(message: string) {
+
+      tiger.log(message, handler.id);
+    },
+
+    state(data?: Partial<State>): State {
+      const { id } = handler 
+      if (data) {
+        return tiger.state(id, { ...tiger.state(id), ...(data as object) }) as any as State
+      }
+      return tiger.state(id) as any as State
+    },
+  }
+}
+
+export type Extension = ReturnType<typeof tigerHandlerAdapter>;
+
+export type ExtendedHandler<Param, State> = Handler<Param, State> & Extension
+
 export class Tiger {
 
   readonly config: TigerConfig
   private _plugins: { [key: string]: TigerPlugin }
-  private _tigs: { [key: string]: Handler<any> }
-  private _resolvers: { [key: string]: Resolver<any> }
+  private _tigs: { [key: string]: Handler<any, any> }
+  private _resolvers: { [key: string]: Resolver<any, any> }
   private _state: { [key: string]: object }
   private _logger: Logger
 
@@ -90,36 +114,31 @@ export class Tiger {
     }
   }
 
-  define<Param>(handler: Handler<Param>) {
+  define<Param = object, State = object>(handler: Handler<Param, State>) {
 
     const id: string = handler.id || nanoid();
     handler.id = id;
 
     const tiger = this;
     
-    Object.assign(handler, {
-      notify(target: string, param: Param) {
-        tiger.notify(this.id, target, param);
-      }
-    })
+    const extended = Object.assign(handler, tigerHandlerAdapter(handler, tiger))
 
-    this._tigs[id] = handler;
+    this._tigs[id] = extended;
 
-    const processor = handler
-    const target = makeTargetFromString(handler.target);
+    const target = makeTargetFromString(extended.target);
     const { path, protocol } = target;
 
     const resolver = this._resolvers[protocol]
 
     if (resolver && resolver.define) {
-      resolver.define(path, id, processor);
+      resolver.define(path, id, extended);
     } else {
       this.warn(`No valid definition handler found for protocol [${protocol}]`)
     }
   }
 
   notify<Param>(from: string, target: string, param: Param) {
-    this.log(`Notifying target: ${target} from ${from} with param ${param}`)
+    this.log(`Notifying target: ${target} with param ${param}`, `tiger:${from}`)
 
     const { protocol, path } = makeTargetFromString(target);
     const resolver = this._resolvers[protocol]
@@ -131,13 +150,13 @@ export class Tiger {
     }
   }
 
-  register<Param>(resolver: Resolver<Param>): void {
+  register<Param, State>(resolver: Resolver<Param, State>): void {
     this._resolvers[resolver.protocol] = resolver;
   }
 
   state(key: string, value?: object): object {
     if (value) {
-      this._state[key] = value
+      this._state[key] = { ...this._state[key], ...value }
     } else {
       return (this._state[key] || {})
     }

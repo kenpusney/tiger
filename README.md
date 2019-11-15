@@ -11,27 +11,33 @@ npm install tiger-server --save
 ```
 
 and create `server.js`:
-```
+```js
 
-const tiger = require("tiger-server")()
+const { Tiger, http, cron, mail } = require("tiger-server")
 
+const tiger = new Tiger({});
 
-tiger.load("hello", ["zmq:hello", function (tiger, state, message) {
+tiger.use(http)
+tiger.use(cron)
+
+tiger.use(mail)
+
+tiger.define({ id: "hello", target: "zmq:hello", process: function (state, message) {
   tiger.log(`Message received: ${JSON.stringify(message)}`)
-}])
+}})
 
 
-tiger.load("cron", ["cron:*/5 * * * * *", function (tiger, { count = 0 }) {
+tiger.define({ id: "cron", target: "cron:*/5 * * * * *", process: function ({ count = 0 }) {
   count++;
   tiger.notify("zmq:hello", { count })
   return { count }
-}]);
+}});
 
-tiger.load("request", ["http:/hello", function (tiger, state, { req, res }) {
+tiger.define({ id: "request", target: "http:/hello", process: function (state, { req, res }) {
   tiger.notify("zmq:hello", { message: "request recieved" });
 
   res.send("success!")
-}])
+}})
 
 tiger.serve();
 ```

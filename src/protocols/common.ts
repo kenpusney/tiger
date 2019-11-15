@@ -1,10 +1,10 @@
 
-import {Tiger, Handler} from "../tiger"
+import {Tiger, ExtendedHandler} from "../tiger"
 
-export function processWithMutableState<Param>(tiger: Tiger, handler: Handler<Param>, id: string, param: Param) {
-  const state = tiger.state(id)
+export function processWithMutableState<Param, State>(handler: ExtendedHandler<Param, State>, param: Param) {
+  const state = handler.state();
 
-  const result = handler.process.call(handler, tiger, state, param)
+  const result = handler.process.call(handler, state, param)
 
-  tiger.state(id, {...state, ...result});
+  handler.state({...state, ...result});
 }

@@ -1,6 +1,6 @@
 
 import { processWithMutableState } from "./common"
-import { TigerPlugin, BaseResolver, Tiger, Handler } from "../tiger";
+import { TigerPlugin, BaseResolver, Tiger, ExtendedHandler } from "../tiger";
 
 import nodeCron = require("node-cron");
 export class CronPlugin implements TigerPlugin  {
@@ -10,11 +10,11 @@ export class CronPlugin implements TigerPlugin  {
   id: string = "cron";  
   
   setup(tiger: Tiger): void {
-    tiger.register(new class extends BaseResolver<object> {
+    tiger.register(new class extends BaseResolver<object, object> {
       readonly protocol: string = "cron";
-      define(path: string, id: string, handler: Handler<object>) {
+      define(path: string, id: string, handler: ExtendedHandler<object, object>) {
         nodeCron.schedule(path, function() {
-          processWithMutableState(tiger, handler, id, {});
+          processWithMutableState(handler, {});
         })
       }
     });
