@@ -6,7 +6,7 @@ import { processWithMutableState } from "./common";
 import { socket } from "zeromq/v5-compat"
 
 
-export class ZmqPlugin implements TigerPlugin  {
+export default new class implements TigerPlugin  {
   /**
    * cron protocol
    */

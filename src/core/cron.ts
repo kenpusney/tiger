@@ -4,7 +4,7 @@ import { TigerPlugin, Tiger, ExtendedModule } from "../tiger";
 import { BaseResolver } from "../resolver"
 
 import nodeCron = require("node-cron");
-export class CronPlugin implements TigerPlugin  {
+export default new class implements TigerPlugin  {
   /**
    * cron protocol
    */

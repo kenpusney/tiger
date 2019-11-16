@@ -2,7 +2,7 @@
 import { TigerPlugin, Tiger, ExtendedModule } from "../tiger";
 import { BaseResolver } from "../resolver"
 
-export class ExamplePlugin implements TigerPlugin  {
+export default new class implements TigerPlugin  {
   /**
    * cron protocol
    */

@@ -1,7 +1,7 @@
 import { TigerPlugin, Tiger } from "../tiger";
 import { BaseResolver } from "../resolver"
 
-export class MailPlugin implements TigerPlugin {
+export default new class implements TigerPlugin {
   id: string = "mail";  
 
   setup(tiger: Tiger): void {

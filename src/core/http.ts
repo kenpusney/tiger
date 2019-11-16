@@ -6,7 +6,7 @@ import { BaseResolver } from "../resolver"
 import express = require("express");
 import cors = require("cors");
 
-export class HttpPlugin implements TigerPlugin {
+export default new class implements TigerPlugin {
   id: string = "http";
   private _server = express();
   
