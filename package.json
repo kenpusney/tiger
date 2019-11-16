@@ -1,6 +1,6 @@
 {
   "name": "tiger-server",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Even simple than trigger",
   "main": "lib/index.js",
   "repository": "https://github.com/kenpusney/tiger",
