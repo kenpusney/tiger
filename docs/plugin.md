@@ -175,4 +175,4 @@ You can also use `Plugin` and `Resolver` interface with TypeScript
 for better hinting. Also `BaseResolver` provided an default implementaion 
 for `define()` and `notified()` method.
 
-See `src/protocols/ExamplePlugins.ts` for an example. 
+See `src/core/example.ts` for an example. 
