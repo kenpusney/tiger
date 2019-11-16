@@ -6,6 +6,9 @@
     "lib": ["es2015"],
     "outDir": "lib",
     "watch": true,
+    "declaration": true,
+    "declarationDir": "types",
     "experimentalDecorators": true
   }
+  
 }
