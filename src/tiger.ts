@@ -1,28 +1,12 @@
 
-import { Logger, getLogger } from  "log4js"
+import { Logger, getLogger, configure } from  "log4js"
 const nanoid = require("nanoid")
 
 import { Resolver } from "./resolver"
+import { TigerConfig, Module, Target } from "./types"
 
-interface TigerConfig {}
-
-type Processor<Param, State, Module> = (this: Module, state: State, param: Param) => object | void
-export interface Module<Param, State> {
-  id?: string
-  readonly target: string
-  readonly process: Processor<Param, State, this>
-}
-
-type TigerCall = (tiger: Tiger) => void
-
-export interface TigerPlugin {
-  readonly id: string;
-  setup(tiger: Tiger): void
-}
-
-export interface Target {
-  readonly protocol: string
-  readonly path: string
+export {
+  TigerConfig, Module, Target
 }
 
 function makeTargetFromString(target: string): Target {
@@ -32,6 +16,18 @@ function makeTargetFromString(target: string): Target {
 }
 
 export type ExtendedModule<Param, State> = Module<Param, State> & Extension<Param, State>
+
+export type TigerCall = (tiger: Tiger) => void
+
+export interface TigerPlugin {
+  readonly id: string;
+  setup(tiger: Tiger): void
+}
+
+configure({
+  appenders: { out: { type: 'stdout' }, file: {type: "file", filename: "tiger.log"} },
+  categories: { default: { appenders: ['out', 'file'], level: 'INFO' } }
+});
 
 export class Tiger {
 
@@ -44,7 +40,7 @@ export class Tiger {
 
   private _postInitializeProcesses: Array<TigerCall>
 
-  constructor(config = {}) {
+  constructor(config: TigerConfig = {}) {
     this.config = config;
     this._plugins = {};
     this._modules = {};
@@ -52,7 +48,6 @@ export class Tiger {
     this._state = {};
 
     this._logger = getLogger("tiger");
-    this._logger.level = "INFO";
     this._postInitializeProcesses = [];
   }
 
@@ -87,7 +82,7 @@ export class Tiger {
   }
 
   private _notify<Param>(from: string, target: string, param: Param) {
-    this._log(`Notifying target: ${target} with param ${param}`, `tiger:${from}`)
+    this._log(`Notifying target: ${target}`, `tiger:${from}`)
 
     const { protocol, path } = makeTargetFromString(target);
     const resolver = this._resolvers[protocol]
@@ -102,7 +97,6 @@ export class Tiger {
       this._warn(`No valid notification handler found for protocol [${protocol}]`)
     }
   }
-
 
   register<Param, State>(resolver: Resolver<Param, State>): void {
     this._resolvers[resolver.protocol] = resolver;
@@ -123,13 +117,13 @@ export class Tiger {
   }
 
   private _log(log: string, scope?: string) {
-    this._logger.info(`${scope ? scope + " -- " : ""}${log}`);
+    this._logger.info(`${scope ? `[${scope}] -- `: ""}${log}`);
   }
   private _error(log: string, scope?: string) {
-    this._logger.error(`${scope ? scope + " -- " : ""}${log}`);
+    this._logger.error(`${scope ? `[${scope}] -- `: ""}${log}`);
   }
   private _warn(log: string, scope?: string) {
-    this._logger.warn(`${scope ? scope + " -- " : ""}${log}`);
+    this._logger.warn(`${scope ? `[${scope}] -- `: ""}${log}`);
   }
 
   _handlerAdapter<Param, State>(handler: Module<Param, State>) {

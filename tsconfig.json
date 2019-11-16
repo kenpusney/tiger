@@ -7,7 +7,7 @@
     "outDir": "lib",
     "watch": true,
     "declaration": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   }
   
 }
